@@ -1,0 +1,44 @@
+name: Deploy
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: Deploy docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip' # caching pip dependencies
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Build Docs
+        run: |
+          mkdocs build
+      
+      - name: 'Compress Zip'
+        run: |
+          zip -r "manpi_release_${{ env.GITHUB_REF }}.zip" \
+          site/ \
+      
+      - name: 'Step Node Env'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      
+      - name: 'Sync To CDN'
+          run: |
+            node .github/scripts/qiniu-upload.js
+        
