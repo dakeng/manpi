@@ -33,12 +33,37 @@ jobs:
           zip -r "manpi_release_${{ env.GITHUB_REF }}.zip" \
           site/ \
       
-      - name: 'Step Node Env'
-        uses: actions/setup-node@v4
+      - name: Restore qshell from cache
+        uses: actions/cache@v4
         with:
-          node-version: 20
+          path: qshell
+          key: qshell-${{ runner.os }}-v2.13.0
+          
+      - name: Check if qshell is cached
+        run: |
+          if [ -d "qshell" ]; then
+            echo "qshell is cached"
+          else
+            echo "qshell is not cached"
+            wget -O qshell.tar.gz https://github.com/qiniu/qshell/releases/download/v2.13.0/qshell-v2.13.0-linux-amd64.tar.gz
+            mkdir -p qshell
+            tar -xzf qshell.tar.gz -C qshell --strip-components=1
+          fi
+
+      - name: Print workspace path
+        run: |
+          echo "Workspace path: ${{ github.workspace }}"
+
+      - name: Run qshell command
+        run: |
+          ./qshell/qshell account ${{  secrets.CI_CDN_ACCESS_KEY }} ${{ secrets.CI_CDN_SECRET_KEY }} manpi
+          ./qshell/qshell qupload2 --src-dir=${{ github.workspace }}/site --bucket=${{ secrets.CI_CDN_BUCKET }}
       
-      - name: 'Sync To CDN'
-          run: |
-            node .github/scripts/qiniu-upload.js
+      - name: 'Upload Release'
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body_path: ${{ github.workspace }}/docs/about/changelog.md
+          files: |
+            manpi_release_${{ env.GITHUB_REF }}.zip
         
