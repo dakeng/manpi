@@ -8,6 +8,8 @@ jobs:
   build:
     name: Deploy docs
     runs-on: ubuntu-latest
+    env:
+      TAG_NAME: '0.0.0'
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
@@ -36,9 +38,14 @@ jobs:
         run: |
           mkdocs build
       
+      - name: Set current tag
+        run: |
+          echo ${GITHUB_REF#refs/tags/}
+          echo TAG_NAME=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
+      
       - name: 'Compress Zip'
         run: |
-          zip -r "manpi_release_${{ env.GITHUB_REF }}.zip" \
+          zip -r "manpi_release_${{ env.TAG_NAME }}.zip" \
           site/ \
       
       - name: Restore qshell from cache
@@ -72,5 +79,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           body_path: ${{ github.workspace }}/docs/about/changelog.md
           files: |
-            manpi_release_${{ env.GITHUB_REF }}.zip
+            manpi_release_${{ env.TAG_NAME }}.zip
         
