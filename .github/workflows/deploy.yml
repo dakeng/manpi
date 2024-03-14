@@ -71,7 +71,7 @@ jobs:
       - name: Run qshell command
         run: |
           ${{ github.workspace }}/qshell account ${{  secrets.CI_CDN_ACCESS_KEY }} ${{ secrets.CI_CDN_SECRET_KEY }} manpi
-          ${{ github.workspace }}/qshell qupload2 --src-dir=${{ github.workspace }}/site --bucket=${{ secrets.CI_CDN_BUCKET }}
+          ${{ github.workspace }}/qshell qupload2 --src-dir=${{ github.workspace }}/site --bucket=${{ secrets.CI_CDN_BUCKET }} --overwrite=true
       
       - name: 'Upload Release'
         uses: softprops/action-gh-release@v2
