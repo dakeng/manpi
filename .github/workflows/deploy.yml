@@ -16,14 +16,6 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Cache Python dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-        
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -47,22 +39,11 @@ jobs:
         run: |
           zip -r "manpi_release_${{ env.TAG_NAME }}.zip" \
           site/ \
-      
-      - name: Restore qshell from cache
-        uses: actions/cache@v4
-        with:
-          path: qshell
-          key: qshell-${{ runner.os }}-v2.13.0
           
-      - name: Check if qshell is cached
+      - name: Download QShell
         run: |
-          if [ -d "qshell" ]; then
-            echo "qshell is cached"
-          else
-            echo "qshell is not cached"
-            wget -O qshell.tar.gz https://github.com/qiniu/qshell/releases/download/v2.13.0/qshell-v2.13.0-linux-amd64.tar.gz
-            tar -xzf qshell.tar.gz
-          fi
+          wget -O qshell.tar.gz https://github.com/qiniu/qshell/releases/download/v2.13.0/qshell-v2.13.0-linux-amd64.tar.gz
+          tar -xzf qshell.tar.gz
 
       - name: Print workspace path
         run: |
